@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tejas Kadam — Transportation &amp; Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #14213D;
+    --night-soft: #1D2C4F;
+    --paper: #EEF0EA;
+    --paper-line: #D7DACF;
+    --ink: #1B2430;
+    --steel: #5B6472;
+    --signal: #E8A33D;
+    --signal-dim: #C98A2C;
+    --route: #3E8E7E;
+    --route-dim: #2E6B5F;
+    --white: #FCFCFA;
+
+    --f-display: 'Oswald', sans-serif;
+    --f-body: 'Source Sans 3', sans-serif;
+    --f-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--f-body);
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+  }
+
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ---------- HERO / DISPATCH BOARD ---------- */
+
+  .hero {
+    background: var(--night);
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+    border-bottom: 6px solid var(--signal);
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.035) 0px,
+      rgba(255,255,255,0.035) 1px,
+      transparent 1px,
+      transparent 64px
+    );
+    pointer-events: none;
+  }
+
+  .board-status {
+    border-bottom: 1px solid rgba(255,255,255,0.14);
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--signal);
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
+  }
+
+  .board-status-track {
+    display: inline-flex;
+    gap: 48px;
+    padding: 10px 32px;
+    animation: ticker 28s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .board-status-track { animation: none; }
+  }
+
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .hero-main {
+    position: relative;
+    z-index: 1;
+    padding: 72px 0 56px;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--f-mono);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--route);
+    margin-bottom: 18px;
+  }
+
+  .hero-eyebrow::before { content: "● "; color: var(--signal); }
+
+  .hero h1 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(40px, 6.5vw, 68px);
+    line-height: 1.03;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    max-width: 780px;
+  }
+
+  .hero h1 span {
+    color: var(--signal);
+  }
+
+  .hero-sub {
+    margin-top: 22px;
+    max-width: 560px;
+    font-size: 17px;
+    color: #C9CFDD;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,0.14);
+    margin-top: 48px;
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+
+  .hero-stat {
+    background: var(--night-soft);
+    padding: 20px 18px;
+  }
+
+  .hero-stat .num {
+    font-family: var(--f-mono);
+    font-size: 26px;
+    color: var(--signal);
+  }
+
+  .hero-stat .label {
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #A9B1C4;
+    margin-top: 6px;
+  }
+
+  @media (max-width: 640px) {
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ---------- SECTION SHELL ---------- */
+
+  section { padding: 88px 0; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 48px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 16px;
+  }
+
+  .section-tag {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--route-dim);
+  }
+
+  .section-head h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(26px, 4vw, 36px);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- ROUTE / EXPERIENCE TIMELINE ---------- */
+
+  .route {
+    position: relative;
+    padding-left: 4px;
+  }
+
+  .route-line {
+    position: absolute;
+    left: 27px;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--route) 0px,
+      var(--route) 10px,
+      transparent 10px,
+      transparent 18px
+    );
+  }
+
+  .stop {
+    position: relative;
+    padding-left: 76px;
+    padding-bottom: 52px;
+  }
+
+  .stop:last-child { padding-bottom: 0; }
+
+  .stop-marker {
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 3px solid var(--route);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--f-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--route-dim);
+    text-align: center;
+    line-height: 1.15;
+  }
+
+  .stop.current .stop-marker {
+    border-color: var(--signal);
+    background: var(--signal);
+    color: var(--night);
+  }
+
+  .stop-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--steel);
+    letter-spacing: 0.03em;
+    margin-bottom: 6px;
+  }
+
+  .stop-meta .pin {
+    color: var(--route-dim);
+  }
+
+  .stop.current .stop-meta .pin { color: var(--signal-dim); }
+
+  .stop h3 {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: 0.01em;
+  }
+
+  .stop .co {
+    font-weight: 400;
+    color: var(--steel);
+  }
+
+  .stop p {
+    margin-top: 10px;
+    max-width: 620px;
+    color: #333B45;
+    font-size: 15.5px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--signal);
+    color: var(--night);
+    padding: 3px 9px;
+    border-radius: 2px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  /* ---------- MANIFEST / SKILLS ---------- */
+
+  .manifest {
+    background: var(--night);
+    color: var(--white);
+  }
+
+  .manifest .section-head { border-bottom-color: rgba(255,255,255,0.25); }
+  .manifest .section-head h2 { color: var(--white); }
+  .manifest .section-tag { color: var(--route); }
+
+  .cargo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+
+  @media (max-width: 720px) {
+    .cargo-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 460px) {
+    .cargo-grid { grid-template-columns: 1fr; }
+  }
+
+  .cargo-cell {
+    background: var(--night-soft);
+    padding: 22px 20px;
+  }
+
+  .cargo-cell .cat {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 12px;
+  }
+
+  .cargo-cell ul {
+    list-style: none;
+    font-size: 14.5px;
+    color: #D3D8E4;
+  }
+
+  .cargo-cell li {
+    padding: 5px 0;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+  }
+  .cargo-cell li:first-child { border-top: none; }
+
+  .cargo-cell.rare {
+    border: 1px solid var(--signal);
+    background: linear-gradient(180deg, rgba(232,163,61,0.14), var(--night-soft) 40%);
+  }
+
+  .cargo-cell.rare .cat { color: var(--signal); }
+
+  .rare-flag {
+    display: inline-block;
+    font-family: var(--f-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--signal);
+    color: var(--night);
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-left: 8px;
+  }
+
+  /* ---------- ABOUT ---------- */
+
+  .about {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  @media (max-width: 780px) {
+    .about { grid-template-columns: 1fr; }
+  }
+
+  .about p {
+    font-size: 16.5px;
+    color: #333B45;
+    margin-bottom: 16px;
+    max-width: 560px;
+  }
+
+  .about-quote {
+    font-family: var(--f-display);
+    font-size: 21px;
+    line-height: 1.35;
+    color: var(--ink);
+    border-left: 4px solid var(--route);
+    padding-left: 22px;
+    text-transform: uppercase;
+    letter-spacing: 0.005em;
+  }
+
+  .about-quote span { color: var(--route-dim); }
+
+  .cred-group-label {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--steel);
+    margin: 40px 0 16px;
+  }
+  .cred-group-label:first-of-type { margin-top: 0; }
+
+  .flag {
+    display: inline-block;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    background: var(--ink);
+    color: var(--white);
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* ---------- CREDENTIALS ---------- */
+
+  .creds {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 780px) {
+    .creds { grid-template-columns: 1fr; }
+  }
+
+  .cred-card {
+    background: var(--white);
+    border: 1px solid var(--paper-line);
+    border-top: 4px solid var(--route);
+    padding: 24px 22px;
+  }
+
+  .cred-card .tag {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--route-dim);
+    margin-bottom: 10px;
+  }
+
+  .cred-card h3 {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+
+  .cred-card p {
+    font-size: 14px;
+    color: var(--steel);
+  }
+
+  /* ---------- CONTACT / FOOTER ---------- */
+
+  .contact {
+    background: var(--paper);
+    border-top: 2px solid var(--ink);
+  }
+
+  .contact-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 32px;
+  }
+
+  .contact h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(28px, 5vw, 42px);
+    text-transform: uppercase;
+    max-width: 480px;
+  }
+
+  .contact h2 span { color: var(--route); }
+
+  .contact-lines {
+    font-family: var(--f-mono);
+    font-size: 14.5px;
+  }
+
+  .contact-lines div {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--paper-line);
+    min-width: 280px;
+  }
+
+  .contact-lines .k {
+    color: var(--steel);
+    display: inline-block;
+    width: 90px;
+  }
+
+  footer {
+    text-align: center;
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    color: var(--steel);
+    padding: 24px 0 36px;
+    letter-spacing: 0.03em;
+  }
+
+  /* ---------- REVEAL ---------- */
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ---------- PROGRESS RAIL ---------- */
+
+  .progress-rail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--route), var(--signal));
+    z-index: 100;
+    transition: width 0.08s linear;
+  }
+
+  /* ---------- STICKY NAV ---------- */
+
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 90;
+    background: rgba(20, 33, 61, 0.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    transform: translateY(-100%);
+    transition: transform 0.35s ease;
+  }
+
+  .navbar.show { transform: translateY(0); }
+
+  .navbar-inner {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 54px;
+  }
+
+  .navbar-brand {
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.06em;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  .navbar-brand b { color: var(--signal); }
+
+  .navbar-links {
+    display: flex;
+    gap: 26px;
+    list-style: none;
+  }
+
+  .navbar-links a {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #C9CFDD;
+    text-decoration: none;
+    padding: 4px 2px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .navbar-links a:hover,
+  .navbar-links a.active {
+    color: var(--signal);
+    border-color: var(--signal);
+  }
+
+  @media (max-width: 640px) {
+    .navbar-links { gap: 16px; }
+    .navbar-links a { font-size: 10.5px; }
+  }
+
+  /* ---------- INTERACTIVE HOVER LIFTS ---------- */
+
+  .stop {
+    transition: transform 0.25s ease;
+  }
+  .stop:hover {
+    transform: translateX(4px);
+  }
+  .stop:hover .stop-marker {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 6px rgba(62,142,126,0.18);
+  }
+  .stop.current:hover .stop-marker {
+    box-shadow: 0 0 0 6px rgba(232,163,61,0.22);
+  }
+  .stop-marker {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .cargo-cell {
+    transition: transform 0.25s ease, background 0.25s ease;
+  }
+  .cargo-cell:hover {
+    transform: translateY(-4px);
+    background: #24345C;
+  }
+  .cargo-cell.rare:hover {
+    background: linear-gradient(180deg, rgba(232,163,61,0.22), #24345C 45%);
+  }
+
+  .cred-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-top-color 0.25s ease;
+  }
+  .cred-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(20,33,61,0.12);
+    border-top-color: var(--signal);
+  }
+
+  .hero-stat {
+    transition: background 0.25s ease, transform 0.25s ease;
+  }
+  .hero-stat:hover {
+    background: #24345C;
+    transform: translateY(-3px);
+  }
+
+  /* ---------- CONTACT LINKS ---------- */
+
+  .contact-lines a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--route);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .contact-lines a:hover {
+    color: var(--route-dim);
+    border-color: var(--signal);
+  }
+
+  .contact-cta {
+    display: inline-flex;
+    gap: 12px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 2px;
+    display: inline-block;
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+  }
+  .btn-solid {
+    background: var(--ink);
+    color: var(--white);
+  }
+  .btn-solid:hover {
+    background: var(--route-dim);
+    transform: translateY(-2px);
+  }
+  .btn-outline {
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+  }
+  .btn-outline:hover {
+    background: var(--ink);
+    color: var(--white);
+    transform: translateY(-2px);
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-rail" id="progressRail"></div>
+
+<nav class="navbar" id="navbar">
+  <div class="navbar-inner">
+    <div class="navbar-brand">TEJAS <b>KADAM</b></div>
+    <ul class="navbar-links">
+      <li><a href="#about" class="nav-link">About</a></li>
+      <li><a href="#route" class="nav-link">Route</a></li>
+      <li><a href="#manifest" class="nav-link">Manifest</a></li>
+      <li><a href="#credentials" class="nav-link">Credentials</a></li>
+      <li><a href="#contact" class="nav-link">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="board-status">
+    <div class="board-status-track">
+      <span>STATUS: OPEN TO NEW ROUTES</span>
+      <span>LANE: LOGISTICS → OPERATIONS → ANALYTICS</span>
+      <span>AVAILABILITY: RELOCATION OK</span>
+      <span>BASE: BRANTFORD, ON</span>
+      <span>STATUS: OPEN TO NEW ROUTES</span>
+      <span>LANE: LOGISTICS → OPERATIONS → ANALYTICS</span>
+      <span>AVAILABILITY: RELOCATION OK</span>
+      <span>BASE: BRANTFORD, ON</span>
+    </div>
+  </div>
+
+  <div class="wrap hero-main">
+    <div class="hero-eyebrow">Dispatch Sheet — Career Manifest</div>
+    <h1>Tejas Kadam<br><span>Keeps freight moving.</span></h1>
+    <p class="hero-sub">Transportation dispatcher with 3.5+ years routing fleets, freight, and inventory across 3PL and carrier environments — now widening the lane toward operations, purchasing, and analytics roles.</p>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">3.5+</div>
+        <div class="label">Years in logistics</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">04</div>
+        <div class="label">Roles across the field</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">IN → CA</div>
+        <div class="label">Bachelor's + MBA</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">ON&nbsp;→</div>
+        <div class="label">Open to relocation</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="route">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>The Route So Far</h2>
+      <div class="section-tag">04 stops logged</div>
+    </div>
+
+    <div class="route">
+      <div class="route-line"></div>
+
+      <div class="stop current reveal">
+        <div class="stop-marker">NOW</div>
+        <div class="stop-meta"><span class="pin">●</span> BRANTFORD, ON</div>
+        <h3>Transportation Dispatcher <span class="co">— Brimich Logistics Inc.</span><span class="badge">Current</span></h3>
+        <p>Brimich is a warehousing and transportation company. In the transportation department, I coordinate day-to-day dispatch — assigning loads, tracking fleet movement, and keeping drivers, carriers, and delivery schedules aligned.</p>
+      </div>
+
+      <div class="stop reveal">
+        <div class="stop-marker">STOP 03</div>
+        <div class="stop-meta"><span class="pin">●</span> CAMBRIDGE, ON</div>
+        <h3>Fleet Coordinator / Dispatcher <span class="co">— Penske Logistics</span></h3>
+        <p>Placed by Protrans Personnel Services on a contract basis right after finishing my MBA. I took it without hesitation — it was my chance to go deep on local transportation, and it paid off: I came out of it knowing dispatch and local freight movement inside out.</p>
+      </div>
+
+      <div class="stop reveal">
+        <div class="stop-marker">STOP 02</div>
+        <div class="stop-meta"><span class="pin">●</span> INDIA → KITCHENER, ON</div>
+        <h3>Shipping Coordinator / US Inbound Dispatcher <span class="co">— Freight Sector Inc.</span></h3>
+        <p>Joined this Canada-based company through a family connection, working under its India-side sister operation, Coldcalls. Started remote from India on clerical work and cold-calling to bring in new customers and report to stakeholders — learning how Canadian trucking actually works before relocating. Continued with the company through my Master's and into US inbound freight coordination and cross-border (ACE/ACI) documentation once in Canada.</p>
+      </div>
+
+      <div class="stop reveal">
+        <div class="stop-marker">STOP 01</div>
+        <div class="stop-meta"><span class="pin">●</span> MUMBAI, IN</div>
+        <h3>Account Executive <span class="co">— ICICI Bank</span></h3>
+        <p>Started as an intern in my second year of a Bachelor's in Management Studies, then grew into an Account Executive role — corporate culture, direct customer service, closing loan applications, and solving queries for a steady stream of customers all day. My first real professional experience, and the discipline it taught me carried straight into logistics.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>About the Dispatcher</h2>
+      <div class="section-tag">Driver's log</div>
+    </div>
+
+    <div class="about">
+      <div class="reveal">
+        <p>I got my first professional experience early — interning at ICICI Bank during my second year of a Bachelor's in Management Studies. I spent that year learning how a bank actually runs day to day: sitting with corporate culture, facing customers directly, closing loan applications, and solving the kind of problems and queries that come at you from a dozen people in a single afternoon.</p>
+        <p>It was solid experience, but I wanted to build something different from the path everyone around me was taking. That's when logistics found me — my brother-in-law opened the door to Freight Sector, a Canada-based company whose sister operation, Coldcalls, ran the India side of the business. I started there on clerical work and cold-calling to bring in new customers and report back to stakeholders, all remote from India. It taught me how the industry actually works in Canada before I'd ever set foot here.</p>
+        <p>While I kept sharpening those skills with Freight Sector, I was already planning the next move: a Master's in Canada, to get the exposure I couldn't get from a distance. I stayed with the company through that stretch and went deep on the trucking side of the business along the way.</p>
+        <p>After finishing my MBA, Protrans Personnel Services placed me as a Fleet Coordinator and Dispatcher at Penske Logistics. I took the contract role immediately — it was exactly the kind of hands-on exposure to local transportation I'd been chasing, and it turned into one of the best decisions I've made in this career: I was thrown straight into the deep end of dispatch and came out knowing the local freight world inside out.</p>
+        <p>When that contract ran its course, I moved to Brimich Logistics — a warehousing and transportation company — as a Transportation Dispatcher in their transportation department, coordinating loads and keeping fleet movement on schedule. I'm ambitious about where this goes next, and I'm looking to stretch further into operations, purchasing, and analytics.</p>
+      </div>
+      <div class="about-quote reveal">Trained in <span>India.</span> Built the career in <span>Canada.</span> Still building.</div>
+    </div>
+  </div>
+</section>
+
+<section class="manifest" id="manifest">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Cargo Manifest</h2>
+      <div class="section-tag">Skills on board</div>
+    </div>
+
+    <div class="cargo-grid">
+      <div class="cargo-cell reveal">
+        <div class="cat">Systems &amp; Tools</div>
+        <ul>
+          <li>TMS / Web TM</li>
+          <li>SAP</li>
+          <li>Excel</li>
+          <li>Tableau</li>
+          <li>LoadLink</li>
+        </ul>
+      </div>
+      <div class="cargo-cell reveal">
+        <div class="cat">Dispatch &amp; Freight</div>
+        <ul>
+          <li>Carrier tendering</li>
+          <li>HOS log review</li>
+          <li>Route scheduling</li>
+          <li>ACE / ACI documentation</li>
+          <li>3PL operations</li>
+        </ul>
+      </div>
+      <div class="cargo-cell reveal">
+        <div class="cat">Operations &amp; Purchasing</div>
+        <ul>
+          <li>PO execution</li>
+          <li>Inventory replenishment</li>
+          <li>Vendor coordination</li>
+          <li>KPI tracking</li>
+          <li>Process accuracy</li>
+        </ul>
+      </div>
+      <div class="cargo-cell rare reveal">
+        <div class="cat">Rare Find<span class="rare-flag">Hard to source</span></div>
+        <ul>
+          <li>Bilingual coordination</li>
+          <li>Cross-border documentation (ACE/ACI)</li>
+          <li>Multi-TMS fluency</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="credentials">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Credentials on File</h2>
+      <div class="section-tag">Verified</div>
+    </div>
+
+    <div class="cred-group-label">Academic Route — India → Canada</div>
+    <div class="creds">
+      <div class="cred-card reveal">
+        <div class="tag">Undergraduate Degree<span class="flag">IN</span></div>
+        <h3>Bachelor of Management Studies</h3>
+        <p>University of Mumbai, India</p>
+      </div>
+      <div class="cred-card reveal">
+        <div class="tag">Graduate Degree<span class="flag">CA</span></div>
+        <h3>MBA</h3>
+        <p>University Canada West, Canada</p>
+      </div>
+    </div>
+
+    <div class="cred-group-label">Professional Certifications</div>
+    <div class="creds">
+      <div class="cred-card reveal">
+        <div class="tag">Certificate</div>
+        <h3>Google Data Analytics</h3>
+        <p>Professional Certificate</p>
+      </div>
+      <div class="cred-card reveal">
+        <div class="tag">Certificate</div>
+        <h3>IBM Data Science</h3>
+        <p>Professional Certificate</p>
+      </div>
+      <div class="cred-card reveal">
+        <div class="tag">Certificate</div>
+        <h3>Digital Marketing Associate</h3>
+        <p>Certification</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="wrap contact-inner">
+    <h2>Next stop:<br><span>your team.</span></h2>
+    <div class="contact-lines">
+      <div><span class="k">EMAIL</span> <a href="mailto:tejas.kadam041@gmail.com">tejas.kadam041@gmail.com</a></div>
+      <div><span class="k">PHONE</span> <a href="tel:+12268996811">+1 226-899-6811</a></div>
+      <div><span class="k">BASED</span> Cambridge / Paris, ON — open to relocation</div>
+      <div class="contact-cta">
+        <a class="btn btn-solid" href="mailto:tejas.kadam041@gmail.com">Send an email</a>
+        <a class="btn btn-outline" href="tel:+12268996811">Call +1 226-899-6811</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  TEJAS KADAM — TRANSPORTATION &amp; OPERATIONS · CAREER MANIFEST
+</footer>
+
+<script>
+  const revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(el => io.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('in'));
+  }
+
+  // Progress rail
+  const rail = document.getElementById('progressRail');
+  const navbar = document.getElementById('navbar');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const sections = ['about', 'route', 'manifest', 'credentials', 'contact']
+    .map(id => document.getElementById(id));
+
+  function onScroll() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    rail.style.width = pct + '%';
+
+    navbar.classList.toggle('show', scrollTop > 260);
+
+    let currentId = null;
+    sections.forEach(sec => {
+      if (sec && sec.getBoundingClientRect().top < 120) currentId = sec.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + currentId);
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+
+</body>
+</html>
